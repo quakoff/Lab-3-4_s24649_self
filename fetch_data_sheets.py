@@ -15,7 +15,7 @@ api_key = os.getenv('GOOGLE_API_KEY')
 spreadsheet_id = "1Mjih1A3Lj8mU_GReSrz2WUZXXKmis-9ZXaUeblu5zLw"
 
 # URL do pobrania danych z Google Sheets
-url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/Sheet1?key={api_key}"
+url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/Dane?key={api_key}"
 
 try:
     # Wysłanie żądania do Google Sheets API
