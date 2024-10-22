@@ -24,6 +24,12 @@ jobs:
           token: ${{secrets.PERSONAL_GITHUB_TOKEN}}
           path: temp_repo
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+            
+
       - name: Install all dependencies
         run: |
           pip install -r temp_repo/requirements.txt
@@ -47,7 +53,3 @@ jobs:
             
            
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
