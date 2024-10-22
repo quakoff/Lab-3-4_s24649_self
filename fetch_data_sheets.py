@@ -10,8 +10,8 @@ logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s 
 logging.getLogger().addHandler(logging.StreamHandler())
 
 api_key = os.getenv('GOOGLE_API_KEY')
-#spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
-spreadsheet_id = "1Mjih1A3Lj8mU_GReSrz2WUZXXKmis-9ZXaUeblu5zLw"
+spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
+
 
 # URL do pobrania danych z Google Sheets
 url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/Dane?key={api_key}"
