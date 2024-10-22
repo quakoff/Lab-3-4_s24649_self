@@ -1,4 +1,5 @@
 import os
+import json
 import pandas as pd
 from google.oauth2.service_account import Credentials
 import gspread
@@ -10,10 +11,23 @@ logging.getLogger().addHandler(logging.StreamHandler())
 
 # Wczytywanie zmiennych środowiskowych
 spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
-api_key = os.getenv('GOOGLE_API_KEY')
+
+# Wczytanie poświadczeń z pliku JSON zapisanego jako zmienna środowiskowa
+credentials_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
+
+if not credentials_json:
+    logging.error("Brak poświadczeń Google do arkusza. Zdefiniuj GOOGLE_CREDENTIALS_JSON w sekrecie.")
+    exit(1)
+
+# Konwertowanie JSON do słownika
+try:
+    credentials_info = json.loads(credentials_json)
+except json.JSONDecodeError as e:
+    logging.error(f"Błąd dekodowania JSON: {e}")
+    exit(1)
 
 # Sprawdzanie, czy plik CSV istnieje
-csv_file_path = 'data_student_24649.csv'
+csv_file_path = 'data_student_number.csv'
 
 if not os.path.exists(csv_file_path):
     logging.error(f"Plik {csv_file_path} nie istnieje.")
@@ -29,8 +43,8 @@ except Exception as e:
 
 # Przesyłanie danych do Google Sheets
 try:
-    # Uwierzytelnienie
-    credentials = Credentials.from_service_account_info(api_key)
+    # Uwierzytelnienie za pomocą konta serwisowego
+    credentials = Credentials.from_service_account_info(credentials_info)
     gc = gspread.authorize(credentials)
 
     # Otwieranie arkusza
