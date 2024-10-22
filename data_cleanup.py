@@ -29,23 +29,24 @@ except Exception as e:
     logging.error(f"Nie udało się wczytać danych z pliku CSV: {e}")
     exit(1)  # Zakończ program w przypadku błędu
 
-# Czyszczenie danych
-logging.info("Rozpoczynam czyszczenie danych.")
-missing_data_threshold = 0.2  # próg 20% brakujących danych do usunięcia wiersza
-missing_data_count = df.isnull().sum().sum()
-total_rows = df.shape[0]
+# # Czyszczenie danych
+# logging.info("Rozpoczynam czyszczenie danych.")
+# missing_data_threshold = 0.2  # próg 20% brakujących danych do usunięcia wiersza
+# missing_data_count = df.isnull().sum().sum()
+# total_rows = df.shape[0]
+#
+# # Usuwanie wierszy z brakami powyżej progu
+# df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))
+#
+# # Uzupełnianie braków średnią (można zmienić na medianę lub inną metodę)
+# df_filled = df_cleaned.fillna(df.mean(numeric_only=True))
+#
+# # Standaryzacja danych (średnia 0, odchylenie standardowe 1)
+# scaler = StandardScaler()
+# df_standardized = pd.DataFrame(scaler.fit_transform(df_filled), columns=df_filled.columns)
+#
+# logging.info("Czyszczenie i standaryzacja danych zakończone.")
 
-# Usuwanie wierszy z brakami powyżej progu
-df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))
-
-# Uzupełnianie braków średnią (można zmienić na medianę lub inną metodę)
-df_filled = df_cleaned.fillna(df.mean(numeric_only=True))
-
-# Standaryzacja danych (średnia 0, odchylenie standardowe 1)
-scaler = StandardScaler()
-df_standardized = pd.DataFrame(scaler.fit_transform(df_filled), columns=df_filled.columns)
-
-logging.info("Czyszczenie i standaryzacja danych zakończone.")
 
 # Przesyłanie danych do Google Sheets
 try:
