@@ -21,7 +21,6 @@ def main():
         logging.info(f"Liczba kolumn: {total_columns}")
         logging.info(f"Pierwsze 5 wierszy danych:\n{df.head()}")
 
-
         # Czyszczenie danych - liczenie braków
         missing_data_count = df.isnull().sum().sum()
         logging.info(f"Liczba brakujących danych: {missing_data_count}")
@@ -36,23 +35,25 @@ def main():
         fill_method = 'średnia'  # Można ustawić na 'średnia', 'mediana', lub 'domyślna'
 
         # Liczba zmienionych wartości przed uzupełnieniem
-        initial_missing_count = df_cleaned.isnull().sum().sum()
+        initial_missing_counts = df_cleaned.isnull().sum()
 
         if fill_method == 'średnia':
             df_filled = df_cleaned.fillna(df_cleaned.mean(numeric_only=True))
         elif fill_method == 'mediana':
             df_filled = df_cleaned.fillna(df_cleaned.median(numeric_only=True))
         elif fill_method == 'domyślna':
-            default_value = 0
+            default_value = 0  # Można dostosować do swoich potrzeb
             df_filled = df_cleaned.fillna(default_value)
         else:
             logging.error("Niepoprawna metoda uzupełniania.")
             raise ValueError("Niepoprawna metoda uzupełniania.")
 
         # Liczba zmienionych wartości po uzupełnieniu
-        final_missing_count = df_filled.isnull().sum().sum()
-        filled_values = initial_missing_count - final_missing_count
-        logging.info(f"Uzupełniono {filled_values} brakujących wartości.")
+        final_missing_counts = df_filled.isnull().sum()
+        filled_values_per_column = initial_missing_counts - final_missing_counts
+        total_filled_values = filled_values_per_column.sum()  # Liczba wszystkich uzupełnionych wartości
+
+        logging.info(f"Uzupełniono {total_filled_values} brakujących wartości w kolumnach.")
 
         # Standaryzacja danych (średnia 0, odchylenie standardowe 1)
         scaler = StandardScaler()
@@ -70,15 +71,16 @@ def main():
 
         # Generowanie raportu
         report = f"""
-        Liczba oryginalnych wierszy: {total_rows}
-        Liczba usuniętych wierszy: {removed_rows} ({removed_rows / total_rows * 100:.2f}%)
-        Liczba uzupełnionych wartości: {filled_values}
-        Liczba brakujących wartości przed uzupełnieniem: {initial_missing_count}
-        Procent usuniętych danych: {removed_rows / total_rows * 100:.2f}%
-        Procent uzupełnionych danych: {filled_values / missing_data_count * 100:.2f}%
-        Liczba pozostałych brakujących wartości: {final_missing_count}
-        
-        """
+           Liczba oryginalnych wierszy: {total_rows}
+           Liczba usuniętych wierszy: {removed_rows} ({removed_rows / total_rows * 100:.2f}%)
+           Liczba uzupełnionych wartości: {total_filled_values}
+           Procent uzupełnionych danych: {total_filled_values / missing_data_count * 100:.2f}%
+           Liczba pozostałych brakujących wartości: {df_filled.isnull().sum().sum()}
+           Liczba zmienionych wartości: {total_filled_values}
+           Procent usuniętych danych: {removed_rows / total_rows * 100:.2f}%
+           
+            
+           """
         with open('report.txt', 'w') as report_file:
             report_file.write(report)
 
