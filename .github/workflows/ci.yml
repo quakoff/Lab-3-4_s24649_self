@@ -41,7 +41,7 @@ jobs:
 
       - name: Upload file to Google Sheets
         env:
-          GOOGLE_SHEET_ID: ${{secrets.GOOGLE_SHEETS_ID}}
+          GOOGLE_SHEETS_ID: ${{secrets.GOOGLE_SHEETS_ID}}
           GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
         run: |
             python fetch_data_sheets.py
