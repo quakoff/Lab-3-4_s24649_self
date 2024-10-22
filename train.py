@@ -12,11 +12,13 @@ logging.getLogger().addHandler(logging.StreamHandler())
 
 # Autoryzacja z użyciem API Key
 api_key = os.getenv('GOOGLE_API_KEY')
-gc = gspread.service_account(filename=None, api_key=api_key)
-
-# Otwieranie arkusza Google Sheets przez jego nazwę
 spreadsheet_id = os.getenv('GOOGLE_SHEET_ID')
+
+# Połączenie z Google Sheets z użyciem API Key
+gc = gspread.Client(auth=api_key)
 sheet = gc.open_by_key(spreadsheet_id).sheet1
+
+# Pobieranie danych z Google Sheets
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
