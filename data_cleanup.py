@@ -9,7 +9,7 @@ logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s 
 logging.getLogger().addHandler(logging.StreamHandler())
 
 # Odczyt danych z pliku data_from_sheets.csv
-file_path = pd.read_csv('data_from_sheets.csv')
+file_path = 'data_from_sheets.csv'
 
 try:
     df = pd.read_csv(file_path)
