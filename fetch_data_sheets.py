@@ -32,7 +32,7 @@ try:
             # Sprawdzenie, czy w odpowiedzi znajdują się dane
             if 'values' in data:
                 df = pd.DataFrame(data['values'][1:], columns=data['values'][0])  # Nagłówki z pierwszego wiersza
-                df.to_csv('data_from_google_sheets.csv', index=False)
+                df.to_csv('data_from_sheets.csv', index=False)
                 logging.info(f"Wczytano {len(df)} wierszy danych z Google Sheets i zapisano do pliku CSV.")
             else:
                 logging.error("Brak danych w odpowiedzi API.")
