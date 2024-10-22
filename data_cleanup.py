@@ -9,7 +9,7 @@ logging.getLogger().addHandler(logging.StreamHandler())
 
 try:
     # Wczytaj dane z CSV
-    df = pd.read_csv('data_from_google_sheets.csv')
+    df = pd.read_csv('data_from_sheets.csv')
     logging.info("Dane zostały wczytane z pliku CSV.")
 
     # Informacje o danych
