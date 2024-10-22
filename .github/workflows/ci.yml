@@ -45,7 +45,7 @@ jobs:
           GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
           GOOGLE_CREDENTIALS_JSON: ${{secrets.GOOGLE_CREDENTIAL_JSON}}
         run: |
-            python data_to_sheets.py
+            python data_cleanup.py
 
       - name: Display Report
         run: cat report.txt

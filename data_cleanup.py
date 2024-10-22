@@ -3,7 +3,9 @@ import pandas as pd
 import numpy as np
 import gspread
 from google.oauth2.service_account import Credentials
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 import logging
 
 # Konfiguracja loggera
@@ -15,7 +17,7 @@ spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
 api_key = os.getenv('GOOGLE_API_KEY')
 
 # Sprawdzanie, czy plik CSV istnieje
-csv_file_path = 'data_student_24649.csv'
+csv_file_path = 'data_student_number.csv'
 
 if not os.path.exists(csv_file_path):
     logging.error(f"Plik {csv_file_path} nie istnieje.")
@@ -29,24 +31,43 @@ except Exception as e:
     logging.error(f"Nie udało się wczytać danych z pliku CSV: {e}")
     exit(1)  # Zakończ program w przypadku błędu
 
-# # Czyszczenie danych
-# logging.info("Rozpoczynam czyszczenie danych.")
-# missing_data_threshold = 0.2  # próg 20% brakujących danych do usunięcia wiersza
-# missing_data_count = df.isnull().sum().sum()
-# total_rows = df.shape[0]
-#
-# # Usuwanie wierszy z brakami powyżej progu
-# df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))
-#
-# # Uzupełnianie braków średnią (można zmienić na medianę lub inną metodę)
-# df_filled = df_cleaned.fillna(df.mean(numeric_only=True))
-#
-# # Standaryzacja danych (średnia 0, odchylenie standardowe 1)
-# scaler = StandardScaler()
-# df_standardized = pd.DataFrame(scaler.fit_transform(df_filled), columns=df_filled.columns)
-#
-# logging.info("Czyszczenie i standaryzacja danych zakończone.")
+# Czyszczenie danych
+logging.info("Rozpoczynam czyszczenie danych.")
+missing_data_threshold = 0.2  # próg 20% brakujących danych do usunięcia wiersza
+missing_data_count = df.isnull().sum().sum()
+total_rows = df.shape[0]
 
+# Usuwanie wierszy z brakami powyżej progu
+df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))
+
+# Uzupełnianie braków średnią (można zmienić na medianę lub inną metodę)
+df_filled = df_cleaned.fillna(df.mean(numeric_only=True))
+
+# Rozdziel kolumny numeryczne i kategoryczne
+num_cols = df_filled.select_dtypes(include=['float64', 'int64']).columns.tolist()
+cat_cols = df_filled.select_dtypes(include=['object']).columns.tolist()
+
+# Tworzenie pipeline'u do przetwarzania danych
+numeric_transformer = Pipeline(steps=[
+    ('scaler', StandardScaler())
+])
+
+categorical_transformer = Pipeline(steps=[
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+
+# Łączenie przetwarzania numerycznego i kategorycznego
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, num_cols),
+        ('cat', categorical_transformer, cat_cols)
+    ])
+
+# Przekształcenie danych
+df_processed = preprocessor.fit_transform(df_filled)
+
+# Przekształcone dane do DataFrame
+df_standardized = pd.DataFrame(df_processed)
 
 # Przesyłanie danych do Google Sheets
 try:
