@@ -26,7 +26,7 @@ def main():
         logging.info(f"Liczba brakujących danych: {missing_data_count}")
 
         # Ustalamy próg usuwania wierszy (np. 20%)
-        missing_data_threshold = 0.1  # Można dostosować do swoich potrzeb
+        missing_data_threshold = 0.3  # Można dostosować do swoich potrzeb
         df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))
         removed_rows = total_rows - df_cleaned.shape[0]
         logging.info(f"Usunięto {removed_rows} wierszy z zbyt wieloma brakującymi danymi.")
