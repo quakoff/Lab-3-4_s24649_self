@@ -13,7 +13,7 @@ spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
 api_key = os.getenv('GOOGLE_API_KEY')
 
 # Sprawdzanie, czy plik CSV istnieje
-csv_file_path = 'data_student_number.csv'
+csv_file_path = 'data_student_24649.csv'
 
 if not os.path.exists(csv_file_path):
     logging.error(f"Plik {csv_file_path} nie istnieje.")
