@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-            
+
 
       - name: Install all dependencies
         run: |
@@ -43,11 +43,6 @@ jobs:
         env:
           GOOGLE_SHEET_ID: ${{secrets.GOOGLE_SHEETS_ID}}
           GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
-          GOOGLE_SERVICE_ACCOUNT_KEY: ${{secrets.GOOGLE_SERVICE_ACCOUNT_KEY}}
-          oath2_client_id: ${{secrets.GOOGLE_OA2_CLIENT_ID}}
-          oath2_client_secret: ${{secrets.GOOGLE_OA2_CLIENT_SECRET}}
-        with:
-          credentials_json: ${{secrets.GOOGLE_SERVICE_ACCOUNT_KEY}}
         run: |
             python train.py
             

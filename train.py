@@ -1,32 +1,52 @@
-#import data from csv file to google sheets using google sheets api and service account
 import gspread
-import csv
-from oauth2client.service_account import ServiceAccountCredentials
-import os
-import json
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+import logging
 
-# Load the data
-csv_file_path = 'data_student_24649.csv'
+# Konfiguracja loggera
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
+logging.getLogger().addHandler(logging.StreamHandler())
 
-# Connect to the Google Sheets API
-#google_service_account_info = json.loads(os.getenv('GOOGLE_SERVICE_ACCOUNT_KEY'))
+# Autoryzacja z użyciem API Key
+api_key = "${{GOOGLE_API_KEY}}"
+gc = gspread.service_account(filename=None, api_key=api_key)
 
-scope = ['https://spreadsheets.google.com/feeds',
-         'https://www.googleapis.com/auth/drive']
+# Otwieranie arkusza Google Sheets przez jego nazwę
+spreadsheet_id = "${{GOOGLE_SHEETS_ID}}"  # Można uzyskać z URL arkusza
+sheet = gc.open_by_key(spreadsheet_id).sheet1
+data = sheet.get_all_records()
+df = pd.DataFrame(data)
 
-# Open the Google Sheet from the url in github actions secrets
-sh = gc.open_by_key(os.environ['GOOGLE_SHEETS_ID'])
-worksheet = sh.get_worksheet(0)
+logging.info("Dane wczytane z Google Sheets")
 
-# Clear the existing data
-worksheet.clear()
+# Czyszczenie danych
+missing_data_threshold = 0.2  # próg 20% brakujących danych do usunięcia wiersza
+missing_data_count = df.isnull().sum().sum()
+total_rows = df.shape[0]
 
-# Update the Google Sheet with the new data
-with open(csv_file_path, 'r') as file:
-    reader = csv.reader(file)
-    data = list(reader)
-    worksheet.append_rows(data)
+# Usuwanie wierszy z brakami powyżej progu
+df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))
 
-print('Data successfully updated in Google Sheets')
+# Uzupełnianie braków średnią (można zmienić na medianę lub inną metodę)
+df_filled = df_cleaned.fillna(df.mean())
 
+# Standaryzacja danych (średnia 0, odchylenie standardowe 1)
+scaler = StandardScaler()
+df_standardized = pd.DataFrame(scaler.fit_transform(df_filled), columns=df_filled.columns)
 
+logging.info("Czyszczenie danych zakończone")
+
+# Generowanie raportu
+removed_rows = total_rows - df_cleaned.shape[0]
+filled_values = missing_data_count - df_cleaned.isnull().sum().sum()
+
+report = f"""
+Procent usuniętych danych: {removed_rows / total_rows * 100:.2f}%
+Procent uzupełnionych danych: {filled_values / missing_data_count * 100:.2f}%
+"""
+
+with open("report.txt", "w") as report_file:
+    report_file.write(report)
+
+logging.info("Raport wygenerowany")
