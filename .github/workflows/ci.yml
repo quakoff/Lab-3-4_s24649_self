@@ -61,7 +61,5 @@ jobs:
         run: |
           cat log.txt
 
-      - name: Display Report
-        run: cat report.txt
-           
+ 
 

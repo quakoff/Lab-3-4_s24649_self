@@ -3,15 +3,13 @@ import pandas as pd
 import requests
 import logging
 
-from train import spreadsheet_id
-
 # Konfiguracja loggera
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
 logging.getLogger().addHandler(logging.StreamHandler())
 
 api_key = os.getenv('GOOGLE_API_KEY')
-#spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
-spreadsheet_id = '1Mjih1A3Lj8mU_GReSrz2WUZXXKmis-9ZXaUeblu5zLw'
+spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
+
 
 
 # URL do pobrania danych z Google Sheets
