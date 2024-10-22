@@ -14,28 +14,26 @@ def main():
         df = pd.read_csv('data_from_sheets.csv')
         logging.info("Dane zostały wczytane z pliku CSV.")
 
-        #log_info(f"Nazwy kolumn przed naprawą: {data.columns.tolist()}")
-
-
         # Informacje o danych
         total_rows = df.shape[0]
         total_columns = df.shape[1]
         logging.info(f"Liczba wierszy przed czyszczeniem: {total_rows}")
         logging.info(f"Liczba kolumn: {total_columns}")
-        logging.info(f"Kolumny przed naprawą: {df.columns.tolist()}")
+        logging.info(f"Pierwsze 5 wierszy danych:\n{df.head()}")
+
 
         # Czyszczenie danych - liczenie braków
         missing_data_count = df.isnull().sum().sum()
         logging.info(f"Liczba brakujących danych: {missing_data_count}")
 
-        # Użytkownik może określić, ile brakujących wartości powinno spowodować usunięcie wiersza
-        missing_data_threshold = float(input("Podaj próg usuwania wierszy (np. 0.2 dla 20%): "))
+        # Ustalamy próg usuwania wierszy (np. 20%)
+        missing_data_threshold = 0.2  # Można dostosować do swoich potrzeb
         df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))
         removed_rows = total_rows - df_cleaned.shape[0]
         logging.info(f"Usunięto {removed_rows} wierszy z zbyt wieloma brakującymi danymi.")
 
         # Uzupełnianie braków - wybór metody uzupełnienia
-        fill_method = input("Jak uzupełnić brakujące wartości? (średnia, mediana, domyślna): ").strip().lower()
+        fill_method = 'średnia'  # Można ustawić na 'średnia', 'mediana', lub 'domyślna'
 
         # Liczba zmienionych wartości przed uzupełnieniem
         initial_missing_count = df_cleaned.isnull().sum().sum()
@@ -45,7 +43,7 @@ def main():
         elif fill_method == 'mediana':
             df_filled = df_cleaned.fillna(df_cleaned.median(numeric_only=True))
         elif fill_method == 'domyślna':
-            default_value = input("Podaj wartość domyślną: ")
+            default_value = 0
             df_filled = df_cleaned.fillna(default_value)
         else:
             logging.error("Niepoprawna metoda uzupełniania.")
@@ -75,8 +73,11 @@ def main():
         Liczba oryginalnych wierszy: {total_rows}
         Liczba usuniętych wierszy: {removed_rows} ({removed_rows / total_rows * 100:.2f}%)
         Liczba uzupełnionych wartości: {filled_values}
+        Liczba brakujących wartości przed uzupełnieniem: {initial_missing_count}
+        Procent usuniętych danych: {removed_rows / total_rows * 100:.2f}%
         Procent uzupełnionych danych: {filled_values / missing_data_count * 100:.2f}%
         Liczba pozostałych brakujących wartości: {final_missing_count}
+        
         """
         with open('report.txt', 'w') as report_file:
             report_file.write(report)
