@@ -144,4 +144,52 @@ try:
                 columns_changed += 1
             df_cleaned[column] = filled_column
 
-    # Po
+    # Po uzupełnieniu liczymy brakujące dane
+    after_fill_missing_count = df_cleaned.isnull().sum().sum()
+
+    # Obliczanie, ile danych faktycznie uzupełniono
+    total_filled_values = before_fill_missing_count - after_fill_missing_count
+
+    # Całkowita liczba brakujących wartości po uzupełnieniu
+    final_missing_counts = after_fill_missing_count
+
+    # Oblicz procent uzupełnionych wartości w stosunku do całkowitej liczby brakujących wartości
+    if initial_missing_data_count > 0:
+        filled_percentage = (total_filled_values / initial_missing_data_count) * 100
+    else:
+        filled_percentage = 0
+
+    logging.info(f"Uzupełniono {total_filled_values} brakujących wartości.")
+    logging.info(f"Procent uzupełnionych danych: {filled_percentage:.2f}%.")
+
+    # Standaryzacja danych (średnia 0, odchylenie standardowe 1)
+    scaler = StandardScaler()
+    numeric_columns = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
+
+    if numeric_columns:
+        df_cleaned[numeric_columns] = scaler.fit_transform(df_cleaned[numeric_columns])
+        logging.info("Dane zostały znormalizowane.")
+    else:
+        logging.warning("Brak kolumn numerycznych do standaryzacji.")
+
+    # Zapisywanie wyczyszczonych danych do pliku
+    df_cleaned.to_csv('cleaned_data.csv', index=False)
+    logging.info("Wyczyszczone dane zapisano do pliku 'cleaned_data.csv'.")
+
+    # Generowanie raportu
+    report = f"""
+    Liczba oryginalnych wierszy: {total_rows}
+    Liczba usuniętych wierszy: {removed_rows} ({removed_rows / total_rows * 100:.2f}%)
+    Liczba uzupełnionych wartości: {total_filled_values}
+    Procent uzupełnionych danych: {filled_percentage:.2f}%
+    Liczba zmienionych kolumn: {columns_changed}
+    Liczba pozostałych brakujących wartości: {final_missing_counts}
+    Całkowita liczba komórek w danych: {total_cells}
+    """
+    with open('report.txt', 'w') as report_file:
+        report_file.write(report)
+
+    logging.info("Raport wygenerowany i zapisany do pliku 'report.txt'.")
+
+except Exception as e:
+    logging.error(f"Wystąpił błąd podczas przetwarzania danych: {e}")
