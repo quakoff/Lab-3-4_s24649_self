@@ -49,7 +49,7 @@ jobs:
 
       - name: Clean and process data
         run: |
-          python clean_data.py
+          python data_cleanup.py
 
       # Krok 6: Wyświetlanie raportu z procesu czyszczenia danych
       - name: Display Report
