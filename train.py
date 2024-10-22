@@ -1,3 +1,5 @@
+import os
+
 import gspread
 import pandas as pd
 import numpy as np
@@ -9,11 +11,11 @@ logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s 
 logging.getLogger().addHandler(logging.StreamHandler())
 
 # Autoryzacja z użyciem API Key
-api_key = "${{GOOGLE_API_KEY}}"
+api_key = os.getenv('GOOGLE_API_KEY')
 gc = gspread.service_account(filename=None, api_key=api_key)
 
 # Otwieranie arkusza Google Sheets przez jego nazwę
-spreadsheet_id = "${{GOOGLE_SHEETS_ID}}"  # Można uzyskać z URL arkusza
+spreadsheet_id = os.getenv('GOOGLE_SHEET_ID')
 sheet = gc.open_by_key(spreadsheet_id).sheet1
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
