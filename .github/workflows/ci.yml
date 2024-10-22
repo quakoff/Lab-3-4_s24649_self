@@ -44,7 +44,7 @@ jobs:
           GOOGLE_SHEET_ID: ${{secrets.GOOGLE_SHEETS_ID}}
           GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
         run: |
-            python data_cleanup.py
+            python data_to_sheets.py
 
       - name: Display Report
         run: cat report.txt
