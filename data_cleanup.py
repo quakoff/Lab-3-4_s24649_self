@@ -14,11 +14,15 @@ def main():
         df = pd.read_csv('data_from_sheets.csv')
         logging.info("Dane zostały wczytane z pliku CSV.")
 
+        #log_info(f"Nazwy kolumn przed naprawą: {data.columns.tolist()}")
+
+
         # Informacje o danych
         total_rows = df.shape[0]
         total_columns = df.shape[1]
         logging.info(f"Liczba wierszy przed czyszczeniem: {total_rows}")
         logging.info(f"Liczba kolumn: {total_columns}")
+        logging.info(f"Kolumny przed naprawą: {df.columns.tolist()}")
 
         # Czyszczenie danych - liczenie braków
         missing_data_count = df.isnull().sum().sum()
