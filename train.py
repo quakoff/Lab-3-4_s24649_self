@@ -3,6 +3,7 @@ import os
 import gspread
 import pandas as pd
 import numpy as np
+import requests
 from sklearn.preprocessing import StandardScaler
 import logging
 
@@ -10,17 +11,21 @@ import logging
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
 logging.getLogger().addHandler(logging.StreamHandler())
 
-# Autoryzacja z użyciem API Key
 api_key = os.getenv('GOOGLE_API_KEY')
-spreadsheet_id = os.getenv('GOOGLE_SHEET_ID')
+spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
 
-# Połączenie z Google Sheets z użyciem API Key
-gc = gspread.Client(auth=api_key)
-sheet = gc.open_by_key(spreadsheet_id).sheet1
+url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/Sheet1?key={api_key}"
 
-# Pobieranie danych z Google Sheets
-data = sheet.get_all_records()
-df = pd.DataFrame(data)
+# Wysłanie żądania do Google Sheets API
+response = requests.get(url)
+
+if response.status_code == 200:
+    logging.info("Dane zostały pobrane z Google Sheets")
+    data = response.json()['values']
+    df = pd.DataFrame(data[1:], columns=data[0])  # Pierwszy wiersz to nagłówki
+    logging.info(f"Wczytano {len(df)} wierszy danych")
+else:
+    logging.error(f"Nie udało się pobrać danych. Kod błędu: {response.status_code}")
 
 logging.info("Dane wczytane z Google Sheets")
 
