@@ -1,3 +1,93 @@
+# import pandas as pd
+# import numpy as np
+# from sklearn.preprocessing import StandardScaler
+# import logging
+#
+# # Konfiguracja loggera
+# logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
+# logging.getLogger().addHandler(logging.StreamHandler())
+#
+# # Wczytaj dane z CSV
+# try:
+#     df = pd.read_csv('data_from_sheets.csv')
+#     logging.info("Dane zostały wczytane z pliku CSV.")
+#
+#     # Informacje o danych
+#     total_rows = df.shape[0]
+#     total_columns = df.shape[1]
+#     logging.info(f"Liczba wierszy przed czyszczeniem: {total_rows}")
+#     logging.info(f"Liczba kolumn: {total_columns}")
+#
+#     # Czyszczenie danych - liczenie braków
+#     missing_data_count = df.isnull().sum().sum()
+#     logging.info(f"Liczba brakujących danych: {missing_data_count}")
+#
+#     # Ustalamy, które wiersze usunąć na podstawie liczby braków w każdej kolumnie
+#     threshold = 1  # Możemy zmienić na inną wartość, aby określić próg usunięcia
+#     rows_to_drop = df[df.isnull().sum(axis=1) > threshold]  # Usuwamy wiersze z brakami
+#     df_cleaned = df.drop(rows_to_drop.index)
+#
+#     # Liczymy usunięte wiersze
+#     removed_rows = total_rows - df_cleaned.shape[0]
+#     logging.info(f"Usunięto {removed_rows} wierszy z zbyt wieloma brakującymi danymi.")
+#
+#     # Uzupełnianie braków - wybór metody uzupełnienia
+#     fill_methods = {
+#         'średnia': lambda x: x.fillna(x.mean()),
+#         'mediana': lambda x: x.fillna(x.median()),
+#         'domyślna': lambda x: x.fillna(0),
+#         'tryb': lambda x: x.fillna(x.mode()[0])  # Uzupełnianie trybem
+#     }
+#
+#     # Liczba zmienionych wartości przed uzupełnieniem
+#     initial_missing_counts = df_cleaned.isnull().sum()
+#
+#     # Uzupełniamy dla wszystkich kolumn, w tym nienumerycznych
+#     columns_changed = 0
+#     for column in df_cleaned.columns:
+#         if df_cleaned[column].isnull().any():
+#             fill_method = 'tryb' if df_cleaned[column].dtype == 'object' else 'średnia'
+#             df_cleaned[column] = fill_methods[fill_method](df_cleaned[column])
+#             columns_changed += 1  # Zwiększamy licznik zmienionych kolumn
+#
+#     # Liczba zmienionych wartości po uzupełnieniu
+#     final_missing_counts = df_cleaned.isnull().sum()
+#     filled_values_per_column = initial_missing_counts - final_missing_counts
+#     total_filled_values = filled_values_per_column.sum()  # Liczba wszystkich uzupełnionych wartości
+#
+#     logging.info(f"Uzupełniono {total_filled_values} brakujących wartości w kolumnach.")
+#
+#     # Standaryzacja danych (średnia 0, odchylenie standardowe 1)
+#     scaler = StandardScaler()
+#     numeric_columns = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
+#
+#     if numeric_columns:
+#         df_cleaned[numeric_columns] = scaler.fit_transform(df_cleaned[numeric_columns])
+#         logging.info("Dane zostały znormalizowane.")
+#     else:
+#         logging.warning("Brak kolumn numerycznych do standaryzacji.")
+#
+#     # Zapisywanie wyczyszczonych danych do pliku
+#     df_cleaned.to_csv('cleaned_data.csv', index=False)
+#     logging.info("Wyczyszczone dane zapisano do pliku 'cleaned_data.csv'.")
+#
+#     # Generowanie raportu
+#     report = f"""
+#     Liczba oryginalnych wierszy: {total_rows}
+#     Liczba usuniętych wierszy: {removed_rows} ({removed_rows / total_rows * 100:.2f}%)
+#     Liczba uzupełnionych wartości: {total_filled_values}
+#     Procent uzupełnionych danych: {total_filled_values / missing_data_count * 100:.2f}%
+#     Liczba zmienionych kolumn: {columns_changed}
+#     Liczba pozostałych brakujących wartości: {df_cleaned.isnull().sum().sum()}
+#     """
+#     with open('report.txt', 'w') as report_file:
+#         report_file.write(report)
+#
+#     logging.info("Raport wygenerowany i zapisany do pliku 'report.txt'.")
+#
+# except Exception as e:
+#     logging.error(f"Wystąpił błąd podczas przetwarzania danych: {e}")
+
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -23,9 +113,8 @@ try:
     logging.info(f"Liczba brakujących danych: {missing_data_count}")
 
     # Ustalamy, które wiersze usunąć na podstawie liczby braków w każdej kolumnie
-    threshold = 1  # Możemy zmienić na inną wartość, aby określić próg usunięcia
-    rows_to_drop = df[df.isnull().sum(axis=1) > threshold]  # Usuwamy wiersze z brakami
-    df_cleaned = df.drop(rows_to_drop.index)
+    threshold = 2  # Usuwamy wiersze z zbyt wieloma brakującymi wartościami
+    df_cleaned = df.dropna(thresh=df.shape[1] - threshold)
 
     # Liczymy usunięte wiersze
     removed_rows = total_rows - df_cleaned.shape[0]
@@ -44,16 +133,20 @@ try:
 
     # Uzupełniamy dla wszystkich kolumn, w tym nienumerycznych
     columns_changed = 0
+    total_filled_values = 0  # Liczba wszystkich uzupełnionych wartości
+
     for column in df_cleaned.columns:
         if df_cleaned[column].isnull().any():
             fill_method = 'tryb' if df_cleaned[column].dtype == 'object' else 'średnia'
-            df_cleaned[column] = fill_methods[fill_method](df_cleaned[column])
+            filled_column = fill_methods[fill_method](df_cleaned[column])
+            total_filled_values += filled_column.isnull().sum()  # Oblicz liczbę brakujących wartości
+            df_cleaned[column] = filled_column
             columns_changed += 1  # Zwiększamy licznik zmienionych kolumn
 
     # Liczba zmienionych wartości po uzupełnieniu
     final_missing_counts = df_cleaned.isnull().sum()
-    filled_values_per_column = initial_missing_counts - final_missing_counts
-    total_filled_values = filled_values_per_column.sum()  # Liczba wszystkich uzupełnionych wartości
+    total_filled_values += (
+                initial_missing_counts - final_missing_counts).sum()  # Liczba wszystkich uzupełnionych wartości
 
     logging.info(f"Uzupełniono {total_filled_values} brakujących wartości w kolumnach.")
 
@@ -87,3 +180,4 @@ try:
 
 except Exception as e:
     logging.error(f"Wystąpił błąd podczas przetwarzania danych: {e}")
+
