@@ -39,9 +39,13 @@ except Exception as e:
 try:
     spreadsheet = gc.open_by_key(spreadsheet_id)
     worksheet = spreadsheet.sheet1  # Pierwszy arkusz
+except gspread.SpreadsheetNotFound:
+    logging.error("Nie znaleziono arkusza. Sprawdź ID arkusza Google.")
+except gspread.APIError as e:
+    logging.error(f"Błąd API Google: {e}")
 except Exception as e:
-    logging.error(f"Nie udało się otworzyć arkusza: {e}")
-    exit(1)
+    logging.error(f"Inny błąd podczas otwierania arkusza: {e}")
+
 
 # Usuwanie istniejących danych i wstawianie nowych
 try:
