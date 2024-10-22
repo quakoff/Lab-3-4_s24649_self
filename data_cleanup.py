@@ -104,12 +104,12 @@ try:
     # Informacje o danych
     total_rows = df.shape[0]
     total_columns = df.shape[1]
-    logging.info(f"Liczba wierszy przed czyszczeniem: {total_rows}")
-    logging.info(f"Liczba kolumn: {total_columns}")
+    total_cells = total_rows * total_columns  # Całkowita liczba komórek w danych
+    logging.info(f"Liczba wierszy: {total_rows}, liczba kolumn: {total_columns}, liczba komórek: {total_cells}")
 
     # Czyszczenie danych - liczenie braków
-    missing_data_count = df.isnull().sum().sum()  # Łączna liczba brakujących wartości
-    logging.info(f"Liczba brakujących danych: {missing_data_count}")
+    initial_missing_data_count = df.isnull().sum().sum()  # Łączna liczba brakujących komórek
+    logging.info(f"Liczba brakujących danych przed uzupełnieniem: {initial_missing_data_count}")
 
     # Usuwanie wierszy z zbyt wieloma brakującymi wartościami
     threshold = 2  # Usuwamy wiersze, gdzie brakuje więcej niż threshold kolumn
@@ -127,10 +127,10 @@ try:
         'tryb': lambda x: x.fillna(x.mode()[0])  # Uzupełnianie trybem dla nienumerycznych
     }
 
-    # Liczba brakujących wartości przed uzupełnieniem
-    initial_missing_counts = df_cleaned.isnull().sum().sum()
+    # Przed uzupełnieniem liczymy brakujące dane
+    before_fill_missing_count = df_cleaned.isnull().sum().sum()
 
-    # Uzupełniamy brakujące wartości w kolumnach
+    # Uzupełniamy brakujące wartości
     total_filled_values = 0
     columns_changed = 0  # Liczba kolumn, w których uzupełniono dane
 
@@ -144,45 +144,4 @@ try:
                 columns_changed += 1
             df_cleaned[column] = filled_column
 
-    # Ponowna liczba brakujących wartości po uzupełnieniu
-    final_missing_counts = df_cleaned.isnull().sum().sum()
-
-    # Oblicz procent uzupełnionych wartości w stosunku do brakujących
-    if missing_data_count > 0:
-        filled_percentage = (total_filled_values / missing_data_count) * 100
-    else:
-        filled_percentage = 0
-
-    logging.info(f"Uzupełniono {total_filled_values} brakujących wartości.")
-    logging.info(f"Procent uzupełnionych danych: {filled_percentage:.2f}%.")
-
-    # Standaryzacja danych (średnia 0, odchylenie standardowe 1)
-    scaler = StandardScaler()
-    numeric_columns = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
-
-    if numeric_columns:
-        df_cleaned[numeric_columns] = scaler.fit_transform(df_cleaned[numeric_columns])
-        logging.info("Dane zostały znormalizowane.")
-    else:
-        logging.warning("Brak kolumn numerycznych do standaryzacji.")
-
-    # Zapisywanie wyczyszczonych danych do pliku
-    df_cleaned.to_csv('cleaned_data.csv', index=False)
-    logging.info("Wyczyszczone dane zapisano do pliku 'cleaned_data.csv'.")
-
-    # Generowanie raportu
-    report = f"""
-    Liczba oryginalnych wierszy: {total_rows}
-    Liczba usuniętych wierszy: {removed_rows} ({removed_rows / total_rows * 100:.2f}%)
-    Liczba uzupełnionych wartości: {total_filled_values}
-    Procent uzupełnionych danych: {filled_percentage:.2f}%
-    Liczba zmienionych kolumn: {columns_changed}
-    Liczba pozostałych brakujących wartości: {final_missing_counts}
-    """
-    with open('report.txt', 'w') as report_file:
-        report_file.write(report)
-
-    logging.info("Raport wygenerowany i zapisany do pliku 'report.txt'.")
-
-except Exception as e:
-    logging.error(f"Wystąpił błąd podczas przetwarzania danych: {e}")
+    # Po
