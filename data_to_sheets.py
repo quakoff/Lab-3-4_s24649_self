@@ -27,7 +27,7 @@ except json.JSONDecodeError as e:
     exit(1)
 
 # Sprawdzanie, czy plik CSV istnieje
-csv_file_path = 'data_student_number.csv'
+csv_file_path = 'data_student_24649.csv'
 
 if not os.path.exists(csv_file_path):
     logging.error(f"Plik {csv_file_path} nie istnieje.")
