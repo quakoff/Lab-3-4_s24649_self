@@ -19,6 +19,7 @@ except Exception as e:
 # Usuwanie brakujących danych
 missing_data_threshold = 0.2  # próg 20% brakujących danych do usunięcia wiersza
 total_rows = df.shape[0]
+missing_data_count = df.isnull().sum().sum()
 
 df_cleaned = df.dropna(thresh=int((1 - missing_data_threshold) * df.shape[1]))  # Usunięcie wierszy z dużą ilością braków
 removed_rows = total_rows - df_cleaned.shape[0]
@@ -35,8 +36,12 @@ numeric_cols = df_filled.select_dtypes(include=['float64', 'int64']).columns  # 
 scaler = StandardScaler()
 df_standardized = df_filled.copy()
 
+missing_values_after = df_standardized.isnull().sum().sum()
+
 df_standardized[numeric_cols] = scaler.fit_transform(df_filled[numeric_cols])  # Standaryzacja kolumn numerycznych
 logging.info("Standaryzacja danych została zakończona.")
+
+
 
 # Zapisanie przetworzonych danych
 df_standardized.to_csv("cleaned_data.csv", index=False)
@@ -44,7 +49,10 @@ logging.info("Przetworzone dane zapisano w pliku cleaned_data.csv.")
 
 # Generowanie raportu
 report = f"""
-Procent usuniętych danych: {removed_rows / total_rows * 100:.2f}%
+Początkowa liczba wierszy: {total_rows}
+Poczatkowa liczba brakujących wartości: {missing_data_count}
+
+Procent usuniętych danych: {removed_rows / (total_rows * len(df_standardized.columns)):.2f}%
 Procent uzupełnionych danych: {filled_values} wartości zostało uzupełnionych.
 """
 
