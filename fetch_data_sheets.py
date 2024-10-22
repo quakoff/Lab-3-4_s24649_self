@@ -1,36 +1,46 @@
 import os
-import gspread
+import requests
 import pandas as pd
 import logging
-from google.oauth2.service_account import Credentials
 
 # Konfiguracja loggera
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
 logging.getLogger().addHandler(logging.StreamHandler())
 
-# Uwierzytelnienie i połączenie z Google Sheets
-logging.info("Rozpoczynam proces uwierzytelniania i pobierania danych z Google Sheets.")
-
-spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
+# Pobranie zmiennych środowiskowych z GitHub Secrets
 api_key = os.getenv('GOOGLE_API_KEY')
+spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
+
+# URL do pobrania danych z Google Sheets
+url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/Sheet1?key={api_key}"
 
 try:
-    # Konfiguracja połączenia
-    credentials = Credentials.from_service_account_info(api_key)
-    gc = gspread.authorize(credentials)
+    # Wysłanie żądania do Google Sheets API
+    response = requests.get(url)
 
-    # Otwórz arkusz
-    spreadsheet = gc.open_by_key(spreadsheet_id)
-    worksheet = spreadsheet.sheet1  # Pierwszy arkusz
+    # Sprawdzenie czy odpowiedź jest poprawna
+    if response.status_code == 200:
+        logging.info("Dane zostały pobrane z Google Sheets")
 
-    # Pobierz dane
-    data = worksheet.get_all_values()
-    logging.info("Dane zostały pobrane z Google Sheets.")
+        # Sprawdzenie czy odpowiedź jest w formacie JSON
+        try:
+            data = response.json()
 
-    # Przekształć dane w DataFrame
-    df = pd.DataFrame(data[1:], columns=data[0])  # Pierwszy wiersz to nagłówki
-    df.to_csv("data_from_sheets.csv", index=False)  # Zapisz dane do pliku CSV
-    logging.info("Dane zostały zapisane do pliku data_from_sheets.csv.")
+            # Sprawdzenie, czy w odpowiedzi znajdują się dane
+            if 'values' in data:
+                df = pd.DataFrame(data['values'][1:], columns=data['values'][0])  # Nagłówki z pierwszego wiersza
+                df.to_csv('data_from_google_sheets.csv', index=False)
+                logging.info(f"Wczytano {len(df)} wierszy danych z Google Sheets i zapisano do pliku CSV.")
+            else:
+                logging.error("Brak danych w odpowiedzi API.")
+                raise ValueError("Odpowiedź nie zawiera klucza 'values'.")
+
+        except ValueError as e:
+            logging.error(f"Wystąpił błąd podczas przetwarzania odpowiedzi z Google Sheets: {e}")
+
+    else:
+        logging.error(f"Nie udało się pobrać danych. Kod błędu: {response.status_code}")
+        raise Exception(f"Nieprawidłowy kod odpowiedzi: {response.status_code}")
 
 except Exception as e:
     logging.error(f"Wystąpił błąd podczas pobierania danych z Google Sheets: {e}")
