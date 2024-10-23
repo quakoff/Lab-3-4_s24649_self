@@ -1,82 +1,71 @@
-
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 import logging
+from sklearn.preprocessing import StandardScaler
 
 # Konfiguracja loggera
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
 logging.getLogger().addHandler(logging.StreamHandler())
 
-# Odczyt danych z pliku data_from_sheets.csv
-file_path = 'data_from_sheets.csv'
 
-try:
-    df = pd.read_csv(file_path)
-    logging.info(f"Pomyślnie wczytano dane z pliku: {file_path}")
-except Exception as e:
-    logging.error(f"Nie udało się wczytać danych: {e}")
-    exit()
+def clean_data(df):
+    initial_row_count = len(df)
+    initial_col_count = len(df.columns)
 
-# Sprawdzenie, czy dane są poprawnie wczytane
-if df.empty:
-    logging.error("Plik CSV jest pusty.")
-    exit()
+    # Logowanie początkowej liczby wierszy i kolumn
+    logging.info(f"Wczytano dane: {initial_row_count} wierszy, {initial_col_count} kolumn.")
 
-# Podstawowe informacje o danych
-total_rows, total_columns = df.shape
-logging.info(f"Liczba wierszy: {total_rows}, Liczba kolumn: {total_columns}")
+    # Usuwanie całkowicie pustych wierszy
+    df_cleaned = df.dropna(how='all')
+    removed_rows = initial_row_count - len(df_cleaned)
+    logging.info(f"Usunięto {removed_rows} pustych wierszy.")
 
-# Podział na kolumny numeryczne i nienumeryczne
-numeric_cols = df.select_dtypes(include=[np.number]).columns
-non_numeric_cols = df.select_dtypes(exclude=[np.number]).columns
+    # Konwersja kolumn numerycznych z object do właściwego typu
+    numeric_cols = df_cleaned.columns[df_cleaned.apply(pd.to_numeric, errors='coerce').notnull().all()]
+    df_cleaned[numeric_cols] = df_cleaned[numeric_cols].apply(pd.to_numeric, errors='coerce')
+    logging.info(f"Zmieniono typy danych na numeryczne dla kolumn: {', '.join(numeric_cols)}")
 
-missing_values_before = df.isnull().sum().sum()
+    # Uzupełnianie braków w kolumnach numerycznych medianą
+    num_cols_before = df_cleaned.select_dtypes(include=[np.number]).isna().sum().sum()
+    df_cleaned.fillna(df_cleaned.median(numeric_only=True), inplace=True)
+    num_cols_after = df_cleaned.select_dtypes(include=[np.number]).isna().sum().sum()
+    filled_numeric = num_cols_before - num_cols_after
+    logging.info(f"Uzupełniono {filled_numeric} wartości numerycznych medianą.")
 
-# Usuwanie wierszy z brakującymi wartościami powyżej progu (np. 20% braków)
-df_cleaned = df.dropna(thresh=int(0.8 * total_columns))  # Usuwanie wierszy z ponad 20% brakami
+    # Uzupełnianie braków w kolumnach nienumerycznych "BD"
+    non_num_cols_before = df_cleaned.select_dtypes(exclude=[np.number]).isna().sum().sum()
+    df_cleaned.fillna("BD", inplace=True)
+    non_num_cols_after = df_cleaned.select_dtypes(exclude=[np.number]).isna().sum().sum()
+    filled_non_numeric = non_num_cols_before - non_num_cols_after
+    logging.info(f"Uzupełniono {filled_non_numeric} wartości nienumerycznych ('BD').")
 
-# Uzupełnianie braków w kolumnach numerycznych medianą
-df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].median())
+    # Łącznie uzupełnione wartości
+    total_filled = filled_numeric + filled_non_numeric
+    logging.info(f"Łącznie uzupełniono {total_filled} wartości.")
 
-# Uzupełnianie braków w kolumnach nienumerycznych napisem "BD"
-df_cleaned[non_numeric_cols] = df_cleaned[non_numeric_cols].fillna("BD")
+    # Standaryzacja danych numerycznych (średnia 0, odchylenie standardowe 1)
+    numeric_columns = df_cleaned.select_dtypes(include=[np.number]).columns
+    scaler = StandardScaler()
+    df_cleaned[numeric_columns] = scaler.fit_transform(df_cleaned[numeric_columns])
+    logging.info(
+        f"Przeprowadzono standaryzację danych numerycznych (średnia=0, odchylenie standardowe=1) dla kolumn: {', '.join(numeric_columns)}")
 
-# Logowanie informacji o uzupełnionych danych w kolumnach nienumerycznych
-for col in non_numeric_cols:
-    num_missing = df[col].isnull().sum()
-    if num_missing > 0:
-        logging.info(f"Uzupełniono {num_missing} brakujących wartości w kolumnie '{col}' napisem 'BD'.")
+    # Logowanie końcowej liczby wierszy i kolumn
+    final_row_count = len(df_cleaned)
+    final_col_count = len(df_cleaned.columns)
+    logging.info(f"Po czyszczeniu danych: {final_row_count} wierszy, {final_col_count} kolumn.")
 
-# Standaryzacja kolumn numerycznych
-scaler = StandardScaler()
-if len(numeric_cols) > 0:
-    df_cleaned[numeric_cols] = scaler.fit_transform(df_cleaned[numeric_cols])
-    logging.info(f"Standaryzowano kolumny numeryczne: {', '.join(numeric_cols)}")
+    return df_cleaned
 
-# Informacje o danych po czyszczeniu
-removed_rows = total_rows - df_cleaned.shape[0]
-percent_removed_rows = (removed_rows / total_rows) * 100
 
-missing_values_after = df_cleaned.isnull().sum().sum()
-filled_values = missing_values_before - missing_values_after
-changed_columns = len(numeric_cols) + len(non_numeric_cols)
+# Wczytaj plik CSV
+df = pd.read_csv('data_from_sheets.csv')
 
-logging.info(f"Liczba usuniętych wierszy: {removed_rows} ({percent_removed_rows:.2f}%)")
-logging.info(f"Liczba uzupełnionych wartości: {filled_values}")
-logging.info(f"Liczba wierszy po przetwarzaniu: {df_cleaned.shape[0]}")
-logging.info(f"Liczba zmienionych kolumn: {changed_columns}")
+# Czyszczenie danych
+df_cleaned = clean_data(df)
 
-# Generowanie raportu
-report = f"""
-Ogólna liczba wierszy: {total_rows}
-Ogólna liczba kolumn: {total_columns}
-Liczba usuniętych wierszy: {removed_rows} ({percent_removed_rows:.2f}%)
-Liczba uzupełnionych wartości: {filled_values}
-Liczba zmienionych kolumn: {changed_columns}
-"""
+# Zapisz oczyszczony plik
+df_cleaned.to_csv('/data_cleaned.csv', index=False)
 
-with open("report.txt", "w") as report_file:
-    report_file.write(report)
-
-logging.info("Raport wygenerowany")
+# Logowanie zapisania pliku
+logging.info("Dane zostały zapisane do pliku: data_cleaned.csv")
