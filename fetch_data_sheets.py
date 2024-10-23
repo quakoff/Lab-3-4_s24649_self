@@ -1,49 +1,71 @@
-import os
 import pandas as pd
-import requests
+import numpy as np
 import logging
+from sklearn.preprocessing import StandardScaler
 
 # Konfiguracja loggera
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
 logging.getLogger().addHandler(logging.StreamHandler())
 
-api_key = os.getenv('GOOGLE_API_KEY')
-#spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID')
-spreadsheet_id = '1Mjih1A3Lj8mU_GReSrz2WUZXXKmis-9ZXaUeblu5zLw'
+
+def clean_data(df):
+    initial_row_count = len(df)
+    initial_col_count = len(df.columns)
+
+    # Logowanie początkowej liczby wierszy i kolumn
+    logging.info(f"Wczytano dane: {initial_row_count} wierszy, {initial_col_count} kolumn.")
+
+    # Usuwanie całkowicie pustych wierszy
+    df_cleaned = df.dropna(how='all')
+    removed_rows = initial_row_count - len(df_cleaned)
+    logging.info(f"Usunięto {removed_rows} pustych wierszy.")
+
+    # Konwersja kolumn numerycznych z object do właściwego typu
+    numeric_cols = df_cleaned.columns[df_cleaned.apply(pd.to_numeric, errors='coerce').notnull().all()]
+    df_cleaned[numeric_cols] = df_cleaned[numeric_cols].apply(pd.to_numeric, errors='coerce')
+    logging.info(f"Zmieniono typy danych na numeryczne dla kolumn: {', '.join(numeric_cols)}")
+
+    # Uzupełnianie braków w kolumnach numerycznych medianą
+    num_cols_before = df_cleaned.select_dtypes(include=[np.number]).isna().sum().sum()
+    df_cleaned.fillna(df_cleaned.median(numeric_only=True), inplace=True)
+    num_cols_after = df_cleaned.select_dtypes(include=[np.number]).isna().sum().sum()
+    filled_numeric = num_cols_before - num_cols_after
+    logging.info(f"Uzupełniono {filled_numeric} wartości numerycznych medianą.")
+
+    # Uzupełnianie braków w kolumnach nienumerycznych "BD"
+    non_num_cols_before = df_cleaned.select_dtypes(exclude=[np.number]).isna().sum().sum()
+    df_cleaned.fillna("BD", inplace=True)
+    non_num_cols_after = df_cleaned.select_dtypes(exclude=[np.number]).isna().sum().sum()
+    filled_non_numeric = non_num_cols_before - non_num_cols_after
+    logging.info(f"Uzupełniono {filled_non_numeric} wartości nienumerycznych ('BD').")
+
+    # Łącznie uzupełnione wartości
+    total_filled = filled_numeric + filled_non_numeric
+    logging.info(f"Łącznie uzupełniono {total_filled} wartości.")
+
+    # Standaryzacja danych numerycznych (średnia 0, odchylenie standardowe 1)
+    numeric_columns = df_cleaned.select_dtypes(include=[np.number]).columns
+    scaler = StandardScaler()
+    df_cleaned[numeric_columns] = scaler.fit_transform(df_cleaned[numeric_columns])
+    logging.info(
+        f"Przeprowadzono standaryzację danych numerycznych (średnia=0, odchylenie standardowe=1) dla kolumn: {', '.join(numeric_columns)}")
+
+    # Logowanie końcowej liczby wierszy i kolumn
+    final_row_count = len(df_cleaned)
+    final_col_count = len(df_cleaned.columns)
+    logging.info(f"Po czyszczeniu danych: {final_row_count} wierszy, {final_col_count} kolumn.")
+
+    return df_cleaned
 
 
-# URL do pobrania danych z Google Sheets
-url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/Dane?key={api_key}"
+# Wczytaj plik CSV
+df = pd.read_csv('data_from_sheets.csv')
 
-try:
-    # Wysłanie żądania do Google Sheets API
-    response = requests.get(url)
+# Czyszczenie danych
+df_cleaned = clean_data(df)
 
-    # Sprawdzenie czy odpowiedź jest poprawna
-    if response.status_code == 200:
-        logging.info("Dane zostały pobrane z Google Sheets")
-        data = response.json()
+# Zapisz oczyszczony plik
+df_cleaned.to_csv('data_cleaned.csv', index=False)
 
-        # Sprawdzenie, czy odpowiedź zawiera dane
-        if 'values' in data:
-            # Przetwarzanie danych
-            df = pd.DataFrame(data['values'][1:], columns=data['values'][0])
-
-            # Sprawdzenie liczby wierszy
-            total_rows = df.shape[0]
-            logging.info(f"Wczytano {total_rows} wierszy danych z Google Sheets.")
-
-            # Zapisanie danych do pliku CSV
-            df.to_csv('data_from_sheets.csv', index=False)
-            logging.info("Dane zapisano do pliku CSV.")
-        else:
-            logging.error("Brak danych w odpowiedzi API.")
-            raise ValueError("Brak danych w odpowiedzi API.")
-
-    else:
-        logging.error(f"Nie udało się pobrać danych. Kod błędu: {response.status_code}")
-        logging.error(f"Treść odpowiedzi: {response.text}")
-        raise ValueError(f"Nie udało się pobrać danych. Kod błędu: {response.status_code}")
-
-except Exception as e:
-    logging.error(f"Wystąpił błąd podczas pobierania danych z Google Sheets: {e}")
+# Logowanie zapisania pliku
+logging.info("Dane zostały zapisane do pliku: data_cleaned.csv")
