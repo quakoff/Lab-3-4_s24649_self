@@ -1,8 +1,9 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import logging
 
+# Konfiguracja logowania
 logging.basicConfig(filename="logs.txt", level=logging.INFO)
 
 # Wczytanie danych
@@ -12,40 +13,32 @@ y_train = pd.read_csv("y_train.csv").values.ravel()
 y_test = pd.read_csv("y_test.csv").values.ravel()
 
 # Trenowanie modelu
-model = RandomForestRegressor(n_estimators=100, random_state=42)
+model = XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
 model.fit(X_train, y_train)
-logging.info("Random Forest model trained.")
+logging.info("Model XGBoost został wytrenuowany.")
 
-
-# Generowanie wyjaśnienia do raportu
-report_content = """
-Raport z Trenowania Modelu
-
-Wyjaśnienie Wyboru Modelu
-Wybrałem model Random Forest Regressor, ponieważ jest prosty w użyciu i dobrze radzi sobie z nieliniowymi zależnościami, co mogłoby pomóc przy różnych zmiennych w danych. Ponadto, lasy losowe są odporne na przetrenowanie, a dane zawierają zarówno zmienne liczbowe, jak i kategoryczne, co ten model dobrze obsługuje.
-
-Metryki Modelu na Zbiorze Testowym
-Poniżej znajdują się wyniki modelu na zbiorze testowym:
-"""
+# Generowanie prognoz
+predictions = model.predict(X_test)
 
 # Ewaluacja modelu
-predictions = model.predict(X_test)
 mse = mean_squared_error(y_test, predictions)
 r2 = r2_score(y_test, predictions)
-logging.info(f"Model evaluation: MSE = {mse}, R2 = {r2}")
+logging.info(f"Ewaluacja modelu: MSE = {mse}, R² = {r2}")
 
-report_content += f"""
+# Generowanie wyjaśnienia do raportu
+report_content = f"""
+### Raport z Trenowania Modelu XGBoost
+
+#### Metryki Modelu na Zbiorze Testowym
 - Mean Squared Error (MSE): {mse}
 - R-squared (R²): {r2}
 
-Podsumowanie
-Model działa i daje teoretycznie sensowne wyniki. Możliwe, że dałoby się jeszcze poprawić wyniki, ale obecne wyniki są wystarczająco dobre do podstawowej analizy.
+#### Podsumowanie
+Model XGBoost dobrze radzi sobie z nieliniowymi zależnościami w danych. Przewidywania są teoretycznie sensowne i można dalej eksperymentować z hyperparametrami, aby uzyskać lepsze wyniki.
 """
 
-
-
+# Zapis raportu
 with open("report.txt", "w", encoding='utf-8') as report_file:
     report_file.write(report_content)
 
-
-logging.info("Raport wygenerowany i zapisany jako report.txt")
+logging.info("Raport wygenerowany i zapisany jako report.txt.")

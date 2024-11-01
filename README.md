@@ -12,15 +12,21 @@ Poniżej znajduje się opis każdego pliku, który jest częścią projektu. Dzi
   Ten plik służy do przygotowania danych. Przekształca zmienne kategoryczne na zmienne numeryczne (bo modele tego wymagają), a następnie skaluje zmienne liczbowe, żeby były w podobnym zakresie. Na koniec dzieli dane na zbiór treningowy i testowy, zapisując je w osobnych plikach, żeby można było sprawdzić, jak model radzi sobie na nowych danych.
 
 - **model_training.py**  
-  Plik ten trenuje model na przygotowanych danych. Użyłem modelu **Random Forest Regressor**, ponieważ jest to prosty model, który dobrze radzi sobie z danymi mieszanymi (czyli takimi, które mają różne typy cech – kategoryczne i numeryczne) i nie wymaga skomplikowanego przygotowania danych. Random Forest jest też odporny na przetrenowanie, więc przy takich danych daje dobre rezultaty bez ryzyka przeuczenia.
+  
+    Plik ten trenuje model na przygotowanych danych. Użyłem modelu **XGBoost**, ponieważ jest to zaawansowany model, który dobrze radzi sobie z danymi mieszanymi (czyli takimi, które mają różne typy cech – kategoryczne i numeryczne) i charakteryzuje się dużą wydajnością oraz elastycznością. XGBoost może skutecznie modelować nieliniowe zależności oraz jest odporny na przetrenowanie, co czyni go idealnym rozwiązaniem dla złożonych zbiorów danych.
 
-  Po treningu plik zapisuje wyniki modelu (MSE i R²) do pliku `report.txt`, żeby można było łatwo zobaczyć, jak model sobie radzi.
+    Po treningu plik zapisuje wyniki modelu (MSE i R²) do pliku `logs.txt`, aby można było łatwo zobaczyć, jak model sobie radzi.
 
 - **report.txt**  
   To plik, który generuje `train_model.py`. Zawiera informacje o wynikach modelu i krótkie podsumowanie, dlaczego wybrano taki model. Dzięki temu można szybko sprawdzić, jak dobrze model działa na zbiorze testowym.
 
 ### Wyjaśnienie wyboru modelu
 
-Wybrałem **Random Forest Regressor**, dobrze radzi sobie z danymi, które mogą mieć nieliniowe zależności, i obsługuje różne typy cech (numeryczne i kategoryczne). To dobry wybór, ponieważ dane w tym projekcie są mieszane, więc użycie prostego modelu, jak regresja liniowa, mogłoby nie dać tak dobrych wyników.
+Przetestowałem wiele modeli jednocześnie, użyłem tego który ostatecznie dawał moim zdaniem najelepsze wyniki. 
+    Oto wyniki dla różnych modeli:
 
-Random Forest jest też odporny na przetrenowanie, więc mimo stosunkowo prostego pipeline’u, wyniki powinny być stabilne i powtarzalne.
+Metryki Modeli na Zbiorze Testowym
+- **RandomForest**: MSE = 54.207190116237534, R² = 0.28517082472169053
+- **XGBoost**: MSE = 48.182387438851904, R² = 0.36461978195144495
+- **LinearRegression**: MSE = 49.111200652362285, R² = 0.352371539938208
+- **SVR**: MSE = 49.63096456234643, R² = 0.34551742323677614

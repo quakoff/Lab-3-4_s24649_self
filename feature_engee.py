@@ -25,12 +25,8 @@ except Exception as e:
 print(df.head())
 print("Nazwy kolumn:", df.columns)
 
-# Definicje cech numerycznych i kategorycznych
-# Zbieranie cech na podstawie dostępnych kolumn
-all_columns = df.columns.tolist()
-
-# Sprawdź, czy kolumna "score" jest dostępna
-if "score" not in all_columns:
+# Sprawdzenie, czy kolumna "score" istnieje
+if "score" not in df.columns:
     logging.error("Brak kolumny 'score' w zbiorze danych.")
     raise ValueError("Brak kolumny 'score' w zbiorze danych.")
 
@@ -39,16 +35,22 @@ numeric_features = ["unemp", "wage", "distance", "tuition", "education"]
 categorical_features = ["gender", "ethnicity", "fcollege", "mcollege", "home", "urban", "income", "region"]
 
 # Filtracja cech w oparciu o dostępność
-numeric_features = [col for col in numeric_features if col in all_columns]
-categorical_features = [col for col in categorical_features if col in all_columns]
+numeric_features = [col for col in numeric_features if col in df.columns]
+categorical_features = [col for col in categorical_features if col in df.columns]
 
-# Informowanie, które cechy zostały znalezione
+# Logowanie dostępnych cech
 logging.info(f"Dostępne cechy numeryczne: {numeric_features}")
 logging.info(f"Dostępne cechy kategoryczne: {categorical_features}")
 
+# Dodawanie nowych cech (przykłady)
+# Możesz dostosować te nowe cechy według swoich potrzeb
+df['parent_education'] = df['fcollege'].astype(str) + "_" + df['mcollege'].astype(str)
+categorical_features.append('parent_education')
+logging.info("Dodano nową cechę: 'parent_education'.")
+
 # Pipeline dla cech numerycznych
 numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='mean')),
+    ('imputer', SimpleImputer(strategy='median')),  # Użycie mediany do imputacji
     ('scaler', StandardScaler())
 ])
 
@@ -66,7 +68,7 @@ preprocessor = ColumnTransformer(
     ])
 
 # Przygotowanie pełnego przetworzonego zbioru danych
-X = df.drop(columns=["score"])  # Zakładamy, że "score" to nasza zmienna docelowa
+X = df.drop(columns=["score"])
 y = df["score"]
 
 # Transformacja i logowanie statystyk numerycznych
