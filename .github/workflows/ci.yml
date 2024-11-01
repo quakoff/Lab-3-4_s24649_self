@@ -48,7 +48,9 @@ jobs:
       # Krok 7: Wyświetlanie logów (opcjonalne, do debugowania)
       - name: Display Log
         run: |
+          cat data_processing.log
           cat logs.txt
+          
 
  
 

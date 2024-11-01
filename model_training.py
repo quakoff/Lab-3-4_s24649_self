@@ -19,12 +19,12 @@ logging.info("Random Forest model trained.")
 
 # Generowanie wyjaśnienia do raportu
 report_content = """
-### Raport z Trenowania Modelu
+Raport z Trenowania Modelu
 
-#### Wyjaśnienie Wyboru Modelu
+Wyjaśnienie Wyboru Modelu
 Wybrałem model Random Forest Regressor, ponieważ jest prosty w użyciu i dobrze radzi sobie z nieliniowymi zależnościami, co mogłoby pomóc przy różnych zmiennych w danych. Ponadto, lasy losowe są odporne na przetrenowanie, a dane zawierają zarówno zmienne liczbowe, jak i kategoryczne, co ten model dobrze obsługuje.
 
-#### Metryki Modelu na Zbiorze Testowym
+Metryki Modelu na Zbiorze Testowym
 Poniżej znajdują się wyniki modelu na zbiorze testowym:
 """
 
@@ -38,9 +38,10 @@ report_content += f"""
 - Mean Squared Error (MSE): {mse}
 - R-squared (R²): {r2}
 
-#### Podsumowanie
+Podsumowanie
 Model działa i daje teoretycznie sensowne wyniki. Możliwe, że dałoby się jeszcze poprawić wyniki, ale obecne wyniki są wystarczająco dobre do podstawowej analizy.
 """
+
 
 
 with open("report.txt", "w", encoding='utf-8') as report_file:
