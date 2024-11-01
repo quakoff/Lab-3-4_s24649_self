@@ -1,4 +1,3 @@
-import pandas as pd
 import requests
 import logging
 
@@ -16,18 +15,10 @@ try:
 
     # Sprawdzamy, czy pobieranie zakończyło się sukcesem
     if response.status_code == 200:
-        # Konwersja do DataFrame
-        logging.info("Dane zostały pobrane z URL.")
-        data = response.content.decode('utf-8')
-        df = pd.read_csv(pd.compat.StringIO(data))
-
-        # Logowanie liczby wierszy
-        total_rows = df.shape[0]
-        logging.info(f"Wczytano {total_rows} wierszy danych z pliku CSV.")
-
-        # Zapisanie danych do pliku CSV
-        df.to_csv('data_from_url.csv', index=False)
-        logging.info("Dane zapisano do pliku CSV.")
+        # Zapisanie pobranego pliku na lokalny dysk
+        with open('data_from_url.csv', 'wb') as f:
+            f.write(response.content)
+        logging.info("Dane zostały pobrane i zapisane do pliku CSV.")
     else:
         logging.error(f"Nie udało się pobrać danych. Kod błędu: {response.status_code}")
         raise ValueError(f"Nie udało się pobrać danych. Kod błędu: {response.status_code}")
