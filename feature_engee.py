@@ -11,7 +11,7 @@ logging.basicConfig(filename='data_processing.log', level=logging.INFO)
 logging.info("Rozpoczęcie przetwarzania danych i inżynierii cech.")
 
 # Wczytanie danych
-df = pd.read_csv("data_from_sheets.csv")
+df = pd.read_csv("data_from_url.csv")
 logging.info(f"Wczytano dane: {df.shape[0]} wierszy, {df.shape[1]} kolumn.")
 
 # Definicje cech numerycznych i kategorycznych
