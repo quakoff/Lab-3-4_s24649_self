@@ -28,7 +28,7 @@ jobs:
           pip install -r requirements.txt 
 
       - name: Upload file to Google Sheets
-        
+        run: |
             python fetch_data.py
            
 
