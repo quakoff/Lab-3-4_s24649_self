@@ -49,6 +49,8 @@ jobs:
       - name: Display Log
         run: |
           cat data_processing.log
+      - name: Display Log
+        run: |
           cat logs.txt
           
 
