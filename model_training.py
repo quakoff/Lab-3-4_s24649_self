@@ -43,7 +43,8 @@ Model działa i daje teoretycznie sensowne wyniki. Możliwe, że dałoby się je
 """
 
 
-with open("report.txt", "w") as report_file:
+with open("report.txt", "w", encoding='utf-8') as report_file:
     report_file.write(report_content)
+
 
 logging.info("Raport wygenerowany i zapisany jako report.txt")

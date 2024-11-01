@@ -11,20 +11,48 @@ logging.basicConfig(filename='data_processing.log', level=logging.INFO)
 logging.info("Rozpoczęcie przetwarzania danych i inżynierii cech.")
 
 # Wczytanie danych
-df = pd.read_csv("data_from_url.csv")
-logging.info(f"Wczytano dane: {df.shape[0]} wierszy, {df.shape[1]} kolumn.")
+try:
+    df = pd.read_csv("data_from_url.csv")
+    logging.info(f"Wczytano dane: {df.shape[0]} wierszy, {df.shape[1]} kolumn.")
+except FileNotFoundError:
+    logging.error("Plik nie został znaleziony.")
+    raise
+except Exception as e:
+    logging.error(f"Wystąpił błąd podczas wczytywania danych: {e}")
+    raise
+
+# Wyświetlenie podstawowych informacji o danych
+print(df.head())
+print("Nazwy kolumn:", df.columns)
 
 # Definicje cech numerycznych i kategorycznych
-numeric_features = ["score", "unemp", "wage", "distance", "tuition", "education"]
+# Zbieranie cech na podstawie dostępnych kolumn
+all_columns = df.columns.tolist()
+
+# Sprawdź, czy kolumna "score" jest dostępna
+if "score" not in all_columns:
+    logging.error("Brak kolumny 'score' w zbiorze danych.")
+    raise ValueError("Brak kolumny 'score' w zbiorze danych.")
+
+# Definiowanie cech numerycznych i kategorycznych
+numeric_features = ["unemp", "wage", "distance", "tuition", "education"]
 categorical_features = ["gender", "ethnicity", "fcollege", "mcollege", "home", "urban", "income", "region"]
 
-# Pipeline dla cech numerycznych: imputacja braków, standaryzacja
+# Filtracja cech w oparciu o dostępność
+numeric_features = [col for col in numeric_features if col in all_columns]
+categorical_features = [col for col in categorical_features if col in all_columns]
+
+# Informowanie, które cechy zostały znalezione
+logging.info(f"Dostępne cechy numeryczne: {numeric_features}")
+logging.info(f"Dostępne cechy kategoryczne: {categorical_features}")
+
+# Pipeline dla cech numerycznych
 numeric_transformer = Pipeline(steps=[
     ('imputer', SimpleImputer(strategy='mean')),
     ('scaler', StandardScaler())
 ])
 
-# Pipeline dla cech kategorycznych: imputacja braków, OneHotEncoder
+# Pipeline dla cech kategorycznych
 categorical_transformer = Pipeline(steps=[
     ('imputer', SimpleImputer(strategy='most_frequent')),
     ('onehot', OneHotEncoder(drop='first'))
