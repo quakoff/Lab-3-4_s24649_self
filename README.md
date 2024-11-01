@@ -1,84 +1,25 @@
+# Dokumentacja Projektu
 
-# Lab2---Obr-bka-danych
+### Opis plików
 
-### Wymogi do zadania - nie tworzycie nowego repo tylko zmieniacie nazwe z Lab1 na Lab2 a treść z zadania jeden przenosie na brancha o nazwie zadania:
+Poniżej znajduje się opis każdego pliku, który jest częścią projektu. Dzięki temu można lepiej zrozumieć, co dokładnie dzieje się na każdym etapie przetwarzania danych i budowania modelu.
 
+- **fetch_data.py**  
+  W tym pliku łączymy się z Google Sheets, aby pobrać dane do lokalnego pliku CSV (`data_from_sheets.csv`). Robi to automatycznie przy użyciu Google API, żebyśmy nie musieli ręcznie zrzucać danych za każdym razem.
 
-#### 0. Wasza aplikacja ma automatycznie pobierać i odpalenie skrypt z repozytorium Lab2---Obr-bka-danych przy każdym odpaleniu Waszego Github Action.
+- **feature_enginee.py**  
+  Ten plik służy do przygotowania danych. Przekształca zmienne kategoryczne na zmienne numeryczne (bo modele tego wymagają), a następnie skaluje zmienne liczbowe, żeby były w podobnym zakresie. Na koniec dzieli dane na zbiór treningowy i testowy, zapisując je w osobnych plikach, żeby można było sprawdzić, jak model radzi sobie na nowych danych.
 
-#### 1. Stworzenie Google Sheets i dodanie dostępów jako secrety z poziomu GitHub Actions - **3 punkty**
+- **model_training.py**  
+  Plik ten trenuje model na przygotowanych danych. Użyłem modelu **Random Forest Regressor**, ponieważ jest to prosty model, który dobrze radzi sobie z danymi mieszanymi (czyli takimi, które mają różne typy cech – kategoryczne i numeryczne) i nie wymaga skomplikowanego przygotowania danych. Random Forest jest też odporny na przetrenowanie, więc przy takich danych daje dobre rezultaty bez ryzyka przeuczenia.
 
-- Student powinien:
-  - DONE Stworzyć arkusz Google Sheets, w którym umieści wygenerowane dane. 
-  - PROBLEM Skonfigurować dostęp do Google Sheets przy użyciu Google API. Klucz API (lub dane uwierzytelniające) powinny zostać umieszczone jako **secret** w repozytorium GitHub.
-  - Użyć GitHub Actions do wczytywania danych z Google Sheets, korzystając z zapisanych secretów.
+  Po treningu plik zapisuje wyniki modelu (MSE i R²) do pliku `report.txt`, żeby można było łatwo zobaczyć, jak model sobie radzi.
 
-**Kroki**:
-- Stworzenie arkusza Google Sheets z danymi.
-- Konfiguracja API Google i dodanie danych uwierzytelniających do GitHub Secrets.
-- Użycie GitHub Actions do automatycznego pobrania danych z arkusza.
+- **report.txt**  
+  To plik, który generuje `train_model.py`. Zawiera informacje o wynikach modelu i krótkie podsumowanie, dlaczego wybrano taki model. Dzięki temu można szybko sprawdzić, jak dobrze model działa na zbiorze testowym.
 
-#### 2. Napisanie skryptu czyszczącego dane (usuwanie lub uzupełnianie braków) i standaryzującego dane - **10 punktów**
+### Wyjaśnienie wyboru modelu
 
-- Student musi napisać skrypt w Pythonie, który:
-  - Odczyta dane z Google Sheets (lub z pliku CSV, jeśli wcześniej pobierze dane).
-  - Przeprowadzi czyszczenie danych:
-    - **Usuwanie braków** – student może wybrać, które dane zostaną usunięte (np. wiersze z zbyt wieloma brakującymi wartościami).
-    - **Uzupełnianie braków** – student może uzupełnić brakujące wartości (np. uzupełnianie medianą, średnią, wartością domyślną itp.).
-  - **Standaryzacja danych** – student powinien przeprowadzić standaryzację danych, aby wszystkie zmienne były w odpowiednich jednostkach, np. przekształcić dane na rozkład o średniej 0 i odchyleniu standardowym 1.
-  - Zwrócenie czystych danych gotowych do dalszej obróbki.
+Wybrałem **Random Forest Regressor**, dobrze radzi sobie z danymi, które mogą mieć nieliniowe zależności, i obsługuje różne typy cech (numeryczne i kategoryczne). To dobry wybór, ponieważ dane w tym projekcie są mieszane, więc użycie prostego modelu, jak regresja liniowa, mogłoby nie dać tak dobrych wyników.
 
-**Kroki**:
-- Odczytanie danych z Google Sheets (lub CSV).
-- Czyszczenie danych: usuwanie braków lub uzupełnianie ich, gdy to możliwe.
-- Standaryzacja danych.
-
-#### 3. Generowanie raportu z GitHub Actions - **2 punkty**
-
-- Po wykonaniu skryptu czyszczącego i standaryzującego dane, GitHub Actions powinien wygenerować raport, który zawiera:
-  - Procent danych, które zostały zmienione w wyniku uzupełniania braków lub standaryzacji.
-  - Procent danych, które zostały usunięte w wyniku czyszczenia.
-  
-**Kroki**:
-- Skrypt powinien liczyć zmienione i usunięte dane.
-- Na koniec działania skryptu powinien wygenerować raport i zapisać go jako plik tekstowy (np. `report.txt`).
-- GitHub Actions powinien wyświetlić zawartość raportu po zakończeniu pracy.
-
-#### 4. Użycie loggera w skrypcie - **3 punkty**
-
-- Skrypt musi zawierać **logger** do śledzenia działań związanych z przetwarzaniem danych:
-  - Każdy etap działania skryptu powinien być odpowiednio logowany (np. rozpoczęcie i zakończenie czyszczenia danych, liczba usuniętych wierszy, procent uzupełnionych danych).
-  - Logger powinien rejestrować działania w pliku `log.txt` oraz wyświetlać istotne informacje w konsoli (np. liczba zmienionych/uzupełnionych/usuniętych danych).
-
-**Kroki**:
-- Skonfiguruj loggera (np. przy użyciu modułu `logging` w Pythonie).
-- Zaloguj kluczowe operacje, takie jak odczytanie danych, rozpoczęcie i zakończenie przetwarzania danych, zmiany dokonane w danych itp.
-
-#### 5. Poprawność użycia Gita - **2 punkty**
-
-- Student powinien:
-  - Wprowadzać odpowiednio zatytułowane **commity** w repozytorium GitHub (opisujące zmiany w kodzie).
-  - Używać **branchy** do wprowadzania większych zmian i zgłaszać pull requesty na główną gałąź (jeśli wymagane).
-  - Wszystkie commity muszą być dobrze opisane i reprezentować odpowiednie etapy pracy (np. "Dodanie skryptu czyszczącego dane", "Konfiguracja loggera", "Dodanie raportu z GitHub Actions").
-
-**Kroki**:
-- Użycie commita z odpowiednimi opisami zmian.
-- Użycie branchy i pull requestów (opcjonalnie, jeśli projekt to wymaga).
-
-### Suma punktów: 20
-
----
-
-### Podsumowanie zadań
-
-- **Google Sheets i GitHub Secrets** (3 punkty): Konfiguracja dostępu do danych w Google Sheets za pomocą GitHub Actions.
-- **Skrypt czyszczący i standaryzujący dane** (10 punktów): Opracowanie skryptu do przetwarzania i standaryzacji danych.
-- **Generowanie raportu z GitHub Actions** (2 punkty): Raport dotyczący przetworzonych danych na koniec procesu.
-- **Logger** (3 punkty): Użycie loggera do śledzenia działań w skrypcie.
-- **Poprawność użycia Gita** (2 punkty): Praca z GitHub zgodnie z dobrymi praktykami (commity, branchy, pull requesty).
-
-###
-
-skrypt jest uruchamiany w sposób:
-
-`python3 generator_danych.py -s XXXXX`
+Random Forest jest też odporny na przetrenowanie, więc mimo stosunkowo prostego pipeline’u, wyniki powinny być stabilne i powtarzalne.

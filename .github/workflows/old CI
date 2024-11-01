@@ -11,11 +11,18 @@ on:
 jobs:
   data-checkout:
     runs-on: ubuntu-latest
-    
+
     steps:
       # Krok 1: Checkout repozytorium
       - name: Checkout current repository
         uses: actions/checkout@v3
+
+      - name: Checkout other repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'PJATK-ASI-2024/Lab2---Obr-bka-danych'
+          token: ${{secrets.PERSONAL_GITHUB_TOKEN}}
+          path: temp_repo
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,23 +32,24 @@ jobs:
 
       - name: Install all dependencies
         run: |
-          pip install -r requirements.txt 
+          pip install -r temp_repo/requirements.txt
+          pip install -r requirements.txt
+
+      - name: Generate data
+        run: |
+          python temp_repo/generator_danych.py -s 24649
 
       - name: Upload file to Google Sheets
         env:
           GOOGLE_SHEETS_ID: ${{secrets.GOOGLE_SHEETS_ID}}
           GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
         run: |
-            python fetch_data.py
-           
+            python fetch_data_sheets.py
+
 
       - name: Clean and process data
         run: |
-          python feature_engee.py
-
-      - name: Data Training and Testing
-        run: |
-          python model_training.py
+          python data_cleanup.py
 
       # Krok 6: Wyświetlanie raportu z procesu czyszczenia danych
       - name: Display Report
@@ -51,7 +59,7 @@ jobs:
       # Krok 7: Wyświetlanie logów (opcjonalne, do debugowania)
       - name: Display Log
         run: |
-          cat logs.txt
+          cat log.txt
 
- 
+
 
