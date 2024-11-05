@@ -15,7 +15,7 @@ y_test = pd.read_csv("y_test.csv").values.ravel()
 # Trenowanie modelu
 model = XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
 model.fit(X_train, y_train)
-logging.info("Model XGBoost został wytrenuowany.")
+logging.info("Model XGBoost został wytrenowany.")
 
 # Generowanie prognoz
 predictions = model.predict(X_test)
