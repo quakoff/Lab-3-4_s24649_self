@@ -12,7 +12,7 @@ logging.info("Rozpoczęcie przetwarzania danych i inżynierii cech.")
 
 # Wczytanie danych
 try:
-    df = pd.read_csv("data_from_url_BACKUP.csv")
+    df = pd.read_csv("data_from_url.csv")
     logging.info(f"Wczytano dane: {df.shape[0]} wierszy, {df.shape[1]} kolumn.")
 except FileNotFoundError:
     logging.error("Plik nie został znaleziony.")
