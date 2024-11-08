@@ -56,5 +56,22 @@ http://localhost:8501
 
 ### UŻYWANIE DOCKER HUB
 
+1 Pobierz obraz
+``` bash
+docker pull s24649/data_prediction_img:latest
+```
+
+2 Uruchom kontener
+``` bash
+docker run -p 8501:8501 s24649/data_prediction_img:latest
+```
+
+3 Otwórz przeglądarkę i wpisz adres
+``` bash
+http://localhost:8501
+```
+
+
+
 
 
