@@ -1,0 +1,15 @@
+# Ignorowane pliki
+feature_engee.py
+fetch_data.py
+logs.log
+README.md
+data_from_url_BACKUP.csv
+
+# Ignorowanie standardowych plików i katalogów tymczasowych
+__pycache__/
+*.py[cod]
+*.ipynb_checkpoints
+*.log
+*.csv~
+*.bak
+.DS_Store

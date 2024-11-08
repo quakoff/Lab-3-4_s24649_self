@@ -4,3 +4,4 @@ xgboost
 seaborn
 matplotlib
 pycaret
+streamlit

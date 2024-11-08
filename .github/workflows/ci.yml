@@ -1,57 +1,26 @@
-# .github/workflows/ci.yml
+name: Docker Image CI
 
-name: CI/CD Pipeline for Data parsing to Google Sheets
-
-# Wykonuj akcje przy każdym pushu do gałęzi main
 on:
   push:
     branches:
       - main
+    workflow_dispatch:
 
 jobs:
-  data-checkout:
-    runs-on: ubuntu-latest
-    
-    steps:
-      # Krok 1: Checkout repozytorium
-      - name: Checkout current repository
-        uses: actions/checkout@v3
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-
-      - name: Install all dependencies
-        run: |
-          pip install -r requirements.txt 
-
-      - name: Upload file to Google Sheets
-        run: |
-            python fetch_data.py
-           
-
-      - name: Clean and process data
-        run: |
-          python feature_engee.py
-
-      - name: Data Training and Testing
-        run: |
-          python model_training.py
-
-
-      - name: Display Report
-        run: |
-          cat report_rf.txt
-
-      - name: Display Log from feature engee
-        run: |
-          cat data_processing.log
-      - name: Display Log from model training
-        run: |
-          cat logs.log
-          
-
- 
-
+            - name: Log in to DockerHub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME}}
+                  password: ${{ secrets.DOCKER_PASSWORD}}
+            - name: Build and push the Docker image
+              uses: docker/build-push-action@v6
+              with:
+                    context: .
+                    file: ./Dockerfile
+                    push: true
+                    tags: s24649/data_prediction_img:latest

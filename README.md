@@ -29,4 +29,32 @@ Metryki Modeli na Zbiorze Testowym
 - **RandomForest**: MSE = 54.207190116237534, R² = 0.28517082472169053
 - **XGBoost**: MSE = 48.182387438851904, R² = 0.36461978195144495
 - **LinearRegression**: MSE = 49.111200652362285, R² = 0.352371539938208
-- **SVR**: MSE = 49.63096456234643, R² = 0.34551742323677614
+- **SVR**: MSE = 49.63096456234643, R² = 0.34551742323677614`
+
+### DOCKER
+
+1 Zklonuj repozytorium na swój komputer
+``` bash
+git clone https://github.com/quakoff/Lab-3-4_s24649_self 
+cd Lab-3-4_s24649_self
+```
+
+2 Zbuduj obraz
+``` bash
+docker build -t data_prediction_img .
+```
+
+3 Uruchom kontener
+``` bash
+docker run -p 8501:8501 data_prediction_img
+```
+
+4 Otwórz przeglądarkę i wpisz adres
+``` bash
+http://localhost:8501
+```
+
+### UŻYWANIE DOCKER HUB
+
+
+
