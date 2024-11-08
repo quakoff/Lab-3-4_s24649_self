@@ -11,7 +11,7 @@ import seaborn as sns
 import logging
 
 # Ustawienie logowania
-logging.basicConfig(filename='modeling_log.log', level=logging.INFO)
+logging.basicConfig(filename='logs.log', level=logging.INFO)
 logging.info("Rozpoczęcie przetwarzania i modelowania.")
 
 # Wczytanie danych
